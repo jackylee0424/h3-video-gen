@@ -1,0 +1,12 @@
+# generated videos + sidecars (keep results notes in work-notes/ instead)
+outputs/
+# third-party sample images, fetched by scripts/fetch_samples.sh
+samples/images/
+# local overrides and machine-specific agent notes
+config/h3gen.env
+AGENTS.local.md
+CLAUDE.local.md
+__pycache__/
+*.pyc
+*.part
+.venv/

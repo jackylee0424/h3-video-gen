@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Run the h3gen CLI from anywhere inside WSL:  scripts/h3gen check | generate ... | example ...
+. "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
+export H3_HOST H3_PORT
+cd "$H3_REPO" && exec python3 -m h3gen "$@"
