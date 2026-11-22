@@ -6,7 +6,7 @@ Windows PowerShell                WSL2 distro (Ubuntu 24.04)                    
 scripts\wsl.ps1  --wsl.exe-->     scripts/*.sh   (setup / download / serve / stop / status)
                                   scripts/h3gen -> python3 -m h3gen  --HTTP :8190-->  ComfyUI v0.46.2  --> CUDA 13 / torch cu130
                                                                                       + ComfyUI-piFlow v1.4.0
-repo: C:\...\h3-vid-gen  ==  /mnt/c/.../h3-vid-gen           runtime: ~/h3-vid-gen-runtime (ComfyUI, .venv, models, logs)
+repo: C:\...\h3-video-gen  ==  /mnt/c/.../h3-video-gen       runtime: ~/h3-video-gen-runtime (ComfyUI, .venv, models, logs)
 outputs\*.mp4 + *.json  <-- h3gen downloads results via /view                    shared read-only: $H3_SHARED_MODELS (optional)
 ```
 

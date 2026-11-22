@@ -1,7 +1,7 @@
 # Troubleshooting
 
 Start with `.\scripts\wsl.ps1 status` and `.\scripts\wsl.ps1 h3gen check`, then read the server log:
-`wsl -d <distro> -- tail -100 ~/h3-vid-gen-runtime/comfyui.log`.
+`wsl -d <distro> -- tail -100 ~/h3-video-gen-runtime/comfyui.log`.
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -18,3 +18,4 @@ Start with `.\scripts\wsl.ps1 status` and `.\scripts\wsl.ps1 h3gen check`, then 
 | Garbled non-ASCII text in prompts (`Â¿`) | File read as cp1252 on Windows | Save prompt files as UTF-8; h3gen reads `--prompt-file` as UTF-8 |
 | Output looks unlike the reference image | Prompt doesn't restate the image / no alignment line | See prompting.md: the alignment line plus "preserving their exact positions…" |
 | GPU busy / out of memory | Another ComfyUI or GPU job is running | Don't stop it yourself; ask the user. Ours uses port 8190 |
+| Warm runs with a new prompt take about 2x longer than in hardware.md; same-prompt reruns stay fast | Windows host is short of RAM and pages out the WSL VM (Task Manager: `vmmemWSL` working set well below WSL's `free -g` "used"), so reloading the 15 GB text encoder hits disk | Free host RAM (close apps), or lower WSL `memory=` in `.wslconfig` so the VM isn't paged. Check sampling speed alone by rerunning the same prompt with another `--seed` |

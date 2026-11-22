@@ -9,7 +9,7 @@ problem appends here. Notes are history: don't rewrite old entries; add a new on
   `## HH:MM` section per session.
 - Each entry has:
   - **Goal**: one line.
-  - **Setup**: versions (copy `~/h3-vid-gen-runtime/versions.txt` when it changed), models, flags.
+  - **Setup**: versions (copy `~/h3-video-gen-runtime/versions.txt` when it changed), models, flags.
   - **What was done**: commands, exactly as run.
   - **Results**: numbers (wall/execution seconds from the sidecar JSON), output file names, and what you saw
     (use `tools/contact_sheet.py`).
@@ -21,3 +21,4 @@ problem appends here. Notes are history: don't rewrite old entries; add a new on
 | Date | Note |
 |---|---|
 | 2026-11-21 | [Bootstrap: repo, WSL runtime, first renders on the RTX 5090](2026-11-21-bootstrap.md) |
+| 2026-11-21 | [Move to the h3-video-gen repo, rename the runtime, re-test](2026-11-21-repo-rename.md) |

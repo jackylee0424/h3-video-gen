@@ -1,4 +1,4 @@
-# h3-vid-gen
+# h3-video-gen
 
 Local video + audio generation from reference images with **pi-H3** (MiniMax H3 distilled to 2–4 steps, with
 DWD, *Decoding Without a Decoder*), on a single consumer NVIDIA GPU (RTX 5090 tested; RTX 4080 notes in
@@ -17,6 +17,8 @@ DWD, *Decoding Without a Decoder*), on a single consumer NVIDIA GPU (RTX 5090 te
 ## Quick start (from Windows PowerShell)
 
 ```powershell
+git clone https://github.com/jackylee0424/h3-video-gen.git
+cd h3-video-gen
 .\scripts\wsl.ps1 setup            # ComfyUI v0.46.2 + ComfyUI-piFlow v1.4.0 in a uv venv (~7 GB)
 .\scripts\wsl.ps1 download_models  # model files, "minimal" profile (see Disk requirements)
 .\scripts\wsl.ps1 fetch_samples    # the Space's example reference images -> samples/images/

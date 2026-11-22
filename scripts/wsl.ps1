@@ -33,6 +33,10 @@ $script = switch ($Command) {
     'h3gen' { 'scripts/h3gen' }
     default { "bash scripts/$Command.sh" }
 }
-$argsQuoted = ($Rest | ForEach-Object { ConvertTo-BashQuoted (ConvertTo-WslPath $_) }) -join ' '
+# Guard the empty case: piping $null into ForEach-Object runs once and would pass an empty '' argument.
+$argsQuoted = if ($Rest) { ($Rest | ForEach-Object { ConvertTo-BashQuoted (ConvertTo-WslPath $_) }) -join ' ' } else { '' }
+# Progress goes to stderr. With 'Stop', Windows PowerShell 5.1 turns the first redirected stderr line
+# (2>&1, *> file) into a terminating error and kills the run, so relax it for the native call.
+$ErrorActionPreference = 'Continue'
 wsl @wslArgs -- bash -lc "cd $(ConvertTo-BashQuoted $repo) && $script $argsQuoted"
 exit $LASTEXITCODE

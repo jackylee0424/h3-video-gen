@@ -10,7 +10,7 @@ fi
 
 # Where ComfyUI, its venv, downloaded models and logs live. Keep it on the Linux filesystem (not /mnt/c):
 # venvs and multi-GB safetensors are much slower across the 9P bridge.
-H3_RUNTIME="${H3_RUNTIME:-$HOME/h3-vid-gen-runtime}"
+H3_RUNTIME="${H3_RUNTIME:-$HOME/h3-video-gen-runtime}"
 H3_COMFY_DIR="$H3_RUNTIME/ComfyUI"
 H3_VENV="$H3_COMFY_DIR/.venv"
 H3_MODELS="$H3_RUNTIME/models"

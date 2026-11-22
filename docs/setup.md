@@ -15,8 +15,8 @@
 ## Steps
 
 ```bash
-# inside WSL, in the repo (e.g. /mnt/c/<path>/h3-vid-gen)
-bash scripts/setup.sh               # 1. ComfyUI + venv + ComfyUI-piFlow; writes ~/h3-vid-gen-runtime/versions.txt
+# inside WSL, in the repo (e.g. /mnt/c/<path>/h3-video-gen)
+bash scripts/setup.sh               # 1. ComfyUI + venv + ComfyUI-piFlow; writes ~/h3-video-gen-runtime/versions.txt
 bash scripts/download_models.sh     # 2. models (minimal profile); re-run any time, it resumes and size-checks
 bash scripts/fetch_samples.sh       # 3. sample images
 bash scripts/serve.sh               # 4. start ComfyUI on 127.0.0.1:8190 (background, waits for the API)
@@ -33,7 +33,7 @@ Copy `config/h3gen.env.example` to `config/h3gen.env` (gitignored). Variables yo
 
 | Var | Default | Meaning |
 |---|---|---|
-| `H3_RUNTIME` | `~/h3-vid-gen-runtime` | ComfyUI, venv, models, logs, raw outputs |
+| `H3_RUNTIME` | `~/h3-video-gen-runtime` | ComfyUI, venv, models, logs, raw outputs |
 | `H3_PORT` | `8190` | ComfyUI port |
 | `H3_SHARED_MODELS` | empty (off) | An existing ComfyUI `models/` folder to reuse read-only |
 | `H3_WSL_DISTRO` | WSL default distro | Distro that `scripts/wsl.ps1` runs in (`$env:H3_WSL_DISTRO` wins) |
@@ -48,5 +48,5 @@ Clone the repo and run the same steps. If the machine already has a ComfyUI mode
 
 ## Uninstall
 
-`bash scripts/stop.sh && rm -rf ~/h3-vid-gen-runtime`. This removes everything except the repo and the shared
+`bash scripts/stop.sh && rm -rf ~/h3-video-gen-runtime`. This removes everything except the repo and the shared
 folder, which is never touched.

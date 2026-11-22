@@ -50,12 +50,12 @@ Run `bash scripts/fetch_samples.sh` first.
  "comfyui_file": {"filename": "..._00001_.mp4", "subfolder": "h3gen", "type": "output"}}
 ```
 
-ComfyUI keeps its own copy in `~/h3-vid-gen-runtime/output/h3gen/`.
+ComfyUI keeps its own copy in `~/h3-video-gen-runtime/output/h3gen/`.
 
 To eyeball a result without a video player, build a contact sheet (8 frames plus stream and audio stats):
 
 ```bash
-~/h3-vid-gen-runtime/ComfyUI/.venv/bin/python tools/contact_sheet.py outputs/<file>.mp4   # -> <file>_sheet.png
+~/h3-video-gen-runtime/ComfyUI/.venv/bin/python tools/contact_sheet.py outputs/<file>.mp4   # -> <file>_sheet.png
 ```
 
 ## Batch use

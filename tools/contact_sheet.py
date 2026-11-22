@@ -1,7 +1,7 @@
 """Contact sheet + stream report for a generated video, so an agent can eyeball a result without a player.
 
 Run with the ComfyUI venv python (needs av, numpy, PIL), e.g. inside WSL:
-  ~/h3-vid-gen-runtime/ComfyUI/.venv/bin/python tools/contact_sheet.py outputs/x.mp4 [--frames 8] [--out x.png]
+  ~/h3-video-gen-runtime/ComfyUI/.venv/bin/python tools/contact_sheet.py outputs/x.mp4 [--frames 8] [--out x.png]
 Prints JSON (video/audio stream info, audio RMS) and writes a PNG grid of evenly spaced frames.
 """
 

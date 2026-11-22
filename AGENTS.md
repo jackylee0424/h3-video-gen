@@ -11,7 +11,7 @@ This repo generates video+audio from reference images with pi-H3 on a local NVID
 - Host: Windows 11 with the repo on a Windows drive (`C:\...` is `/mnt/c/...` inside WSL).
 - Compute runs **inside a WSL2 distro** (Ubuntu 24.04 tested) with GPU passthrough. `scripts/wsl.ps1` uses
   `$env:H3_WSL_DISTRO`, else `H3_WSL_DISTRO` in `config/h3gen.env`, else the WSL default distro.
-- Runtime (ComfyUI, venv, downloaded models, logs, raw ComfyUI output) lives in `~/h3-vid-gen-runtime` inside
+- Runtime (ComfyUI, venv, downloaded models, logs, raw ComfyUI output) lives in `~/h3-video-gen-runtime` inside
   WSL, **not** in this repo. Don't put venvs or models under `/mnt/c`.
 - `H3_SHARED_MODELS` (set in `config/h3gen.env`) may point at another ComfyUI install's `models/` folder. Treat it
   as read-only: never modify that install, start it or stop it.
@@ -57,5 +57,5 @@ This repo generates video+audio from reference images with pi-H3 on a local NVID
   `ComfyUI-piFlow/workflows/pi-H3-DWD.json`. If upstream changes, update it here and record the change in a
   work-note.
 - ComfyUI HTTP client: [h3gen/comfy.py](h3gen/comfy.py). CLI: [h3gen/cli.py](h3gen/cli.py).
-- Server log: `~/h3-vid-gen-runtime/comfyui.log` (WSL). Installed versions: `~/h3-vid-gen-runtime/versions.txt`.
+- Server log: `~/h3-video-gen-runtime/comfyui.log` (WSL). Installed versions: `~/h3-video-gen-runtime/versions.txt`.
 - Failure playbook: [docs/troubleshooting.md](docs/troubleshooting.md).
