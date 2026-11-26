@@ -37,6 +37,21 @@ Inside WSL, run the same commands as `bash scripts/<name>.sh` and `scripts/h3gen
 Stop the server with `.\scripts\wsl.ps1 stop` to free the GPU. Prompts have a specific structure; see
 [docs/prompting.md](docs/prompting.md).
 
+## Speed and quality (RTX 5090)
+
+A 5 s clip (124 frames) at 1344x768 (768p), 2 steps, with the server warm. Measured 2026-11-25 with the
+`distracted-boyfriend` preset:
+
+| `--attention` | Sampling per step | Total, prompt already encoded | Sharpness vs dense | PSNR vs dense |
+|---|---:|---:|---:|---:|
+| `dense` | 15.1 s | – | 100% | – |
+| `sol` (built-in) | 6.45 s | 14.8 s | 67% | 14.7 dB |
+| `spark` (needs `setup --spark`) | 6.76 s | 14.9 s | 98% | 18.1 dB |
+
+The default, `--attention auto`, uses Spark when it is installed and Sol otherwise. The first render after
+`serve` takes about 40 s because it loads every model from disk. Details and RTX 4080 guidance:
+[docs/hardware.md](docs/hardware.md).
+
 ## Disk requirements
 
 Every model is in ComfyUI format (INT8 ConvRot / NVFP4). Sizes are the actual file sizes on Hugging Face:
