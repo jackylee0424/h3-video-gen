@@ -5,7 +5,8 @@ Windows PowerShell                WSL2 distro (Ubuntu 24.04)                    
 ------------------                ---------------------------------------------------------   ----------------------
 scripts\wsl.ps1  --wsl.exe-->     scripts/*.sh   (setup / download / serve / stop / status)
                                   scripts/h3gen -> python3 -m h3gen  --HTTP :8190-->  ComfyUI v0.46.2  --> CUDA 13 / torch cu130
-                                                                                      + ComfyUI-piFlow v1.4.0
+                                                                                      + ComfyUI-piFlow v1.4.2
+                                                                                      + ComfyUI-Spark-H3 (optional)
 repo: C:\...\h3-video-gen  ==  /mnt/c/.../h3-video-gen       runtime: ~/h3-video-gen-runtime (ComfyUI, .venv, models, logs)
 outputs\*.mp4 + *.json  <-- h3gen downloads results via /view                    shared read-only: $H3_SHARED_MODELS (optional)
 ```
@@ -20,13 +21,17 @@ outputs\*.mp4 + *.json  <-- h3gen downloads results via /view                   
 
 ## The pi-H3 DWD graph ([h3gen/graph.py](../h3gen/graph.py))
 
-This is the flattened equivalent of upstream `ComfyUI-piFlow/workflows/pi-H3-DWD.json`:
+This is the flattened equivalent of upstream `ComfyUI-piFlow/workflows/pi-H3-DWD.json` (Sol) and
+`pi-H3-DWD-Spark-SM*.json` (Spark):
 
 ```
 UNETLoader(minimax_h3_fl2va_pruned_int8_convrot)
   -> Load LakonLab Adapter(pi_h3_{2,4}step_dwd_adapter_int8_convrot)   # pi-Flow v2 LoRA + DWD pixel head
   -> MiniMaxH3SigmaShift(video 12, audio 3)
-  -> BlockSparseAttention(sol-attn, tau 1.0, dense blocks "0, 1")       # --dense skips this
+  -> --attention auto (default): spark if its node is registered, else sol
+     --attention sol:   BlockSparseAttention(sol-attn, tau 1.0, dense blocks "0, 1", extra_tokens 0)
+     --attention spark: MiniMaxH3SparkAttentionSM{86,89,120}(mode speed, topk_ratio 0.2, no warmup)
+     --attention dense: no node
 CLIPLoader(qwen3vl_32b nvfp4, type minimax) + VAELoader(video VAE) + LoadImage/ImageScale(lanczos, center crop)
   -> MiniMaxH3ImageToVideo(prompt, W, H, frames, first_frame?, last_frame?)  -> CONDITIONING, LATENT
 RandomNoise(seed), BasicGuider, KSamplerSelect(euler), pi-Flow Scheduler(steps, max_raw_t 0.93|0.96, final 0.6)

@@ -19,7 +19,7 @@ DWD, *Decoding Without a Decoder*), on a single consumer NVIDIA GPU (RTX 5090 te
 ```powershell
 git clone https://github.com/jackylee0424/h3-video-gen.git
 cd h3-video-gen
-.\scripts\wsl.ps1 setup            # ComfyUI v0.46.2 + ComfyUI-piFlow v1.4.0 in a uv venv (~7 GB)
+.\scripts\wsl.ps1 setup            # ComfyUI v0.46.2 + ComfyUI-piFlow v1.4.2 in a uv venv (~7 GB); add --spark for Spark-Attn
 .\scripts\wsl.ps1 download_models  # model files, "minimal" profile (see Disk requirements)
 .\scripts\wsl.ps1 fetch_samples    # the Space's example reference images -> samples/images/
 .\scripts\wsl.ps1 serve            # headless ComfyUI on 127.0.0.1:8190

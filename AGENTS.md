@@ -30,6 +30,7 @@ This repo generates video+audio from reference images with pi-H3 on a local NVID
 | Run a preset | `.\scripts\wsl.ps1 h3gen example <id> [--steps 4] [--seed N]` | ids: `h3gen example --list` |
 | Generate | `.\scripts\wsl.ps1 h3gen generate --first IMG [--last IMG] --prompt-file P.txt` | see docs/usage.md |
 | Inspect graph | add `--dry-run` | prints the settings and the API graph, queues nothing |
+| Spark-Attn | `.\scripts\wsl.ps1 setup --spark`, then `--attention spark` | optional prebuilt node; docs/setup.md |
 
 `h3gen` prints progress on stderr and **one JSON object per video on stdout**: `output`, `wall_seconds`,
 `execution_seconds` and `settings`. The same JSON is saved next to the mp4 as `outputs/<name>.json`.

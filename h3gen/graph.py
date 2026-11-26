@@ -1,8 +1,9 @@
 """Build the ComfyUI API-format graph for pi-H3 DWD generation.
 
-This is a flattened, headless equivalent of upstream ComfyUI-piFlow `workflows/pi-H3-DWD.json` (v1.4.0): the
-"pi-H3 Adapter" and "Frame Count" subgraphs are computed here in Python instead of with math nodes, and the
-resolution/frame rules follow the official Space (`app.py`: canvas_size and num_frames).
+This is a flattened, headless equivalent of upstream ComfyUI-piFlow `workflows/pi-H3-DWD.json` and
+`pi-H3-DWD-Spark-SM*.json` (v1.4.2): the "pi-H3 Adapter" and "Frame Count" subgraphs are computed here in Python
+instead of with math nodes, and the resolution/frame rules follow the official Space (`app.py`: canvas_size and
+num_frames).
 """
 
 import math
@@ -23,6 +24,19 @@ ADAPTERS = {
 MAX_RAW_T = {2: 0.93, 4: 0.96}
 FINAL_STEP_SIZE_SCALE = 0.6
 SHIFT_VIDEO, SHIFT_AUDIO = 12.0, 3.0
+
+ATTENTIONS = ('sol', 'spark', 'dense')
+# ComfyUI's built-in Sol (BlockSparseAttention). piFlow 1.4.1 set extra_tokens 256 -> 0: 256 left block seams.
+SOL_SETTINGS = {'start_percent': 0.0, 'end_percent': 1.0, 'dense_blocks': '0, 1', 'min_tokens': 12288,
+                'extra_tokens': 0, 'sink_conditioning': 'exact_kv_and_rows', 'verbose': False}
+# Spark-Attn (Spark-H3 custom node, one class per GPU arch: MiniMaxH3SparkAttentionSM86/SM89/SM120).
+# Values from upstream pi-H3-DWD-Spark-SM120.json: `speed` mode, every step sparse.
+SPARK_NODE_PREFIX = 'MiniMaxH3SparkAttentionSM'
+SPARK_SETTINGS = {'mode': 'speed', 'steps': 20, 'warmup_mode': 'warmup_ratio', 'warmup_ratio': 0.0,
+                  'warmup_steps': 4, 'topk_mode': 'topk_ratio', 'topk_ratio': 0.2, 'topk_blocks': 228,
+                  'dense_layers': 0, 'min_tokens': 12288, 'strict': True, 'dense_backend': 'inherit',
+                  'tail_granularity': 'query', 'reblock_layout': 'q_reuse_k', 'sparse_scope': 'target-video',
+                  'producer_chunk': 16384, 'chunk_path': 'none'}
 
 
 def canvas_size(aspect_ratio: str, megapixels: float, multiple: int = 32) -> tuple[int, int]:
@@ -45,11 +59,17 @@ def build_graph(
         first_image: str | None = None, last_image: str | None = None,
         unet: str = UNET, clip: str = CLIP, video_vae: str = VIDEO_VAE_PREFERENCE[0], audio_vae: str = AUDIO_VAE,
         adapter: str | None = None, adapter_strength: float = 1.0,
-        sparse_attention: bool = True, sol_tau: float = 1.0,
+        attention: str = 'sol', sol_tau: float = 1.0, spark_node: str = SPARK_NODE_PREFIX + '120',
         filename_prefix: str = 'h3gen/pi-H3-DWD') -> dict:
-    """Return a ComfyUI /prompt graph. `first_image`/`last_image` are names already uploaded to ComfyUI's input dir."""
+    """Return a ComfyUI /prompt graph. `first_image`/`last_image` are names already uploaded to ComfyUI's input dir.
+
+    `attention`: 'sol' (built-in BlockSparseAttention), 'spark' (`spark_node`, from the Spark-H3 custom node) or
+    'dense' (no sparse attention node).
+    """
     if steps not in ADAPTERS:
         raise ValueError('steps must be 2 or 4')
+    if attention not in ATTENTIONS:
+        raise ValueError(f'attention must be one of {ATTENTIONS}')
     adapter = adapter or ADAPTERS[steps]
     g: dict[str, dict] = {}
 
@@ -57,15 +77,15 @@ def build_graph(
         g[str(nid)] = {'class_type': cls, 'inputs': inputs}
         return [str(nid), 0]
 
-    # model chain: base -> pi-H3 adapter -> sigma shift -> (Sol sparse attention)
+    # model chain: base -> pi-H3 adapter -> sigma shift -> sparse attention (Sol or Spark; none for dense)
     model = node(1, 'UNETLoader', unet_name=unet, weight_dtype='default')
     model = node(2, 'Load LakonLab Adapter', model=model, adapter_name=adapter, adapter_strength=adapter_strength)
     model = node(3, 'MiniMaxH3SigmaShift', model=model, shift_video=SHIFT_VIDEO, shift_audio=SHIFT_AUDIO)
-    if sparse_attention:
+    if attention == 'sol':
         model = node(4, 'BlockSparseAttention', model=model, **{
-            'selection': 'sol-attn', 'selection.tau': sol_tau, 'start_percent': 0.0, 'end_percent': 1.0,
-            'dense_blocks': '0, 1', 'min_tokens': 12288, 'extra_tokens': 256,
-            'sink_conditioning': 'exact_kv_and_rows', 'verbose': False})
+            'selection': 'sol-attn', 'selection.tau': sol_tau, **SOL_SETTINGS})
+    elif attention == 'spark':
+        model = node(4, spark_node, model=model, **SPARK_SETTINGS)
 
     clip_ref = node(10, 'CLIPLoader', clip_name=clip, type='minimax', device='default')
     vae_ref = node(11, 'VAELoader', vae_name=video_vae)

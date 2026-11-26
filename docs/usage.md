@@ -13,7 +13,7 @@ Prints a JSON readiness report: server, ComfyUI version, VRAM, missing nodes, an
 ```
 scripts/h3gen generate (--prompt TEXT | --prompt-file FILE) [--first IMG] [--last IMG]
     [--steps 2|4] [--seconds 5] [--aspect 16:9] [--megapixels 1.0] [--width W --height H]
-    [--seed N] [--label NAME] [--out PATH.mp4] [--dense] [--sol-tau 1.0]
+    [--seed N] [--label NAME] [--out PATH.mp4] [--attention auto|sol|spark|dense] [--sol-tau 1.0]
     [--unet F] [--clip F] [--video-vae F] [--adapter F] [--timeout 3600] [--dry-run]
 ```
 
@@ -26,7 +26,7 @@ scripts/h3gen generate (--prompt TEXT | --prompt-file FILE) [--first IMG] [--las
 | `--megapixels` | 1.0 | 1.0 gives 1344x768 (16:9); 0.25–0.5 is much faster for drafts |
 | `--width/--height` | – | Explicit canvas, multiples of 32; overrides aspect/megapixels |
 | `--seed` | random | Recorded in the sidecar |
-| `--dense` | off | Turns off Sol sparse attention (slower; use it to rule out Sol when debugging) |
+| `--attention` | `auto` | `auto`: `spark` if its node is installed, else `sol`. `sol`: ComfyUI's built-in Sol. `spark`: Spark-Attn, needs `setup.sh --spark`; closest to dense at the same speed as Sol. `dense`: no sparse attention (about 2.3x slower per step; use it to rule out sparse attention when debugging). `--dense` is the same as `--attention dense`. The sidecar records which one ran |
 | `--dry-run` | off | Prints settings and the API graph; uploads and queues nothing |
 
 ### `example`
@@ -40,7 +40,7 @@ Run `bash scripts/fetch_samples.sh` first.
 
 ## Outputs
 
-`outputs/<YYYYmmdd-HHMMSS>_<label>_s<seed>_<steps>step.mp4` is 24 fps H.264 video with stereo AAC audio at
+`outputs/<YYYYmmdd-HHMMSS>_<label>_s<seed>_<steps>step[_spark|_dense].mp4` is 24 fps H.264 video with stereo AAC audio at
 32 kHz. Next to it, a `.json` sidecar holds the same object that is printed to stdout:
 
 ```json

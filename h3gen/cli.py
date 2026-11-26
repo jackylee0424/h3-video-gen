@@ -65,6 +65,21 @@ def resolve_models(c: Comfy, args) -> dict:
     return m
 
 
+def spark_nodes(info: dict) -> list[str]:
+    """Spark-Attn node classes ComfyUI registered (one per GPU arch the installed package was built for)."""
+    return sorted(n for n in info if n.startswith(G.SPARK_NODE_PREFIX))
+
+
+def resolve_spark_node(c: Comfy) -> str:
+    nodes = spark_nodes(c.object_info())
+    if not nodes:
+        raise ComfyError('Spark-Attn node not registered (install it: bash scripts/setup.sh --spark, then restart '
+                         'the server)')
+    if len(nodes) > 1:
+        raise ComfyError(f'several Spark-Attn nodes registered: {nodes}; expected one per GPU architecture')
+    return nodes[0]
+
+
 # --- commands ----------------------------------------------------------------------------------------------------
 def cmd_check(args):
     c = Comfy(args.url)
@@ -79,6 +94,7 @@ def cmd_check(args):
                           'vram_free_gb': round(d.get('vram_free', 0) / 2**30, 1)} for d in stats.get('devices', [])]
     info = c.object_info()
     report['missing_nodes'] = [n for n in REQUIRED_NODES if n not in info]
+    report['spark_attention'] = spark_nodes(info) or 'not installed (optional: bash scripts/setup.sh --spark)'
     for steps in (2, 4):
         args.steps = steps
         try:
@@ -106,23 +122,32 @@ def run_generation(c: Comfy, *, prompt, first=None, last=None, steps=2, seconds=
             raise SystemExit(f'image not found: {p}')
 
     args.steps = steps
-    models = resolve_models(c, args) if not dry_run or c.alive() else {
+    online = not dry_run or c.alive()
+    models = resolve_models(c, args) if online else {
         'unet': G.UNET, 'clip': G.CLIP, 'video_vae': G.VIDEO_VAE_PREFERENCE[0], 'audio_vae': G.AUDIO_VAE,
         'adapter': G.ADAPTERS[steps]}
+    attention = 'dense' if args.dense else args.attention
+    if attention == 'auto':  # Spark-Attn when its node is installed (closest to dense), else built-in Sol
+        attention = 'spark' if online and spark_nodes(c.object_info()) else 'sol'
+    spark_node = (resolve_spark_node(c) if online else G.SPARK_NODE_PREFIX + '120') if attention == 'spark' else None
     stamp = dt.datetime.now().strftime('%Y%m%d-%H%M%S')
-    name = f'{stamp}_{slug(label or prompt)}_s{seed}_{steps}step'
+    name = f'{stamp}_{slug(label or prompt)}_s{seed}_{steps}step' + ('' if attention == 'sol' else f'_{attention}')
     out = out or os.path.join(REPO, 'outputs', name + '.mp4')
 
     first_name = c.upload_image(first) if first and not dry_run else (os.path.basename(first) if first else None)
     last_name = c.upload_image(last) if last and not dry_run else (os.path.basename(last) if last else None)
     g = G.build_graph(prompt=prompt, width=width, height=height, frames=frames, steps=steps, seed=seed,
-                      first_image=first_name, last_image=last_name, sparse_attention=not args.dense,
-                      sol_tau=args.sol_tau, filename_prefix=f'h3gen/{name}', **models)
+                      first_image=first_name, last_image=last_name, attention=attention, sol_tau=args.sol_tau,
+                      **({'spark_node': spark_node} if spark_node else {}), filename_prefix=f'h3gen/{name}',
+                      **models)
     settings = dict(label=label, prompt=prompt, first_frame=first, last_frame=last, steps=steps, seed=seed,
                     seconds_requested=seconds, num_frames=frames, duration_s=round(frames / G.FPS, 3), fps=G.FPS,
                     width=width, height=height, aspect_ratio=None if args.width else aspect,
-                    megapixels=None if args.width else megapixels, attention='dense' if args.dense else 'sol',
-                    sol_tau=None if args.dense else args.sol_tau, models=models)
+                    megapixels=None if args.width else megapixels, attention=attention,
+                    sol_tau=args.sol_tau if attention == 'sol' else None,
+                    sol_extra_tokens=G.SOL_SETTINGS['extra_tokens'] if attention == 'sol' else None,
+                    spark_node=spark_node, spark_mode=G.SPARK_SETTINGS['mode'] if spark_node else None,
+                    models=models)
     if dry_run:
         print(json.dumps({'settings': settings, 'graph': g}, indent=1))
         return 0
@@ -217,7 +242,10 @@ def main(argv=None):
     sub = p.add_subparsers(dest='cmd', required=True)
 
     def common(sp):
-        sp.add_argument('--dense', action='store_true', help='dense attention instead of Sol sparse attention')
+        sp.add_argument('--attention', choices=('auto',) + G.ATTENTIONS, default='auto',
+                        help='auto (default): spark if installed, else sol. sol: built-in Sol. spark: Spark-Attn '
+                             '(needs setup.sh --spark). dense: no sparse attention')
+        sp.add_argument('--dense', action='store_true', help='same as --attention dense')
         sp.add_argument('--sol-tau', type=float, default=1.0, help='Sol sparsity threshold (upstream default 1.0)')
         sp.add_argument('--unet', help=f'transformer file (default {G.UNET})')
         sp.add_argument('--clip', help=f'text encoder file (default {G.CLIP})')

@@ -22,3 +22,4 @@ problem appends here. Notes are history: don't rewrite old entries; add a new on
 |---|---|
 | 2026-11-21 | [Bootstrap: repo, WSL runtime, first renders on the RTX 5090](2026-11-21-bootstrap.md) |
 | 2026-11-21 | [Move to the h3-video-gen repo, rename the runtime, re-test](2026-11-21-repo-rename.md) |
+| 2026-11-25 | [piFlow 1.4.2, Sol seam fix, Spark-Attn A/B (+ Spark-H3 safety review)](2026-11-25-spark-attn.md) |
